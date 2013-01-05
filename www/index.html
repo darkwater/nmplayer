@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mplayer</title>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta names="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <link type="text/css" rel="stylesheet" href="css/bootstrap.min.css" />
+    <link type="text/css" rel="stylesheet" href="css/bootstrap-responsive.min.css" />
+    <style>
+        body {
+            cursor: default;
+            padding: 20px;
+        }
+        #musicprogress {
+            margin: 5px 0;
+            width: 100%;
+        }
+        #musicprogress .bar {
+            -webkit-transition: width 1s linear;
+            -moz-transition: width 1s linear;
+            -o-transition: width 1s linear;
+            transition: width 1s linear;
+        }
+        #volume {
+            width: 28px;
+        }
+    </style>
+</head>
+
+<body onselectstart="return false">
+    <div class="container">
+        <div class="row-fluid">
+            <div class="span12 well" style="text-align: center;">
+                <h2>Now playing:</h2>
+                <h1 id="nowplaying">LOADING</h1>
+                <div id="musicprogress" class="progress">
+                    <div class="bar" style="width: 0%;"></div>
+                    <div style="width: 0; height: 2px; margin: 0;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="row-fluid">
+            <div class="span6 well">
+                <dl class="dl-horizontal">
+                    <dt>Artist: </dt> <dd id="song-artist">-</dd>
+                    <dt>Album: </dt> <dd id="song-album">-</dd>
+                    <dt>Title: </dt> <dd id="song-title">-</dd>
+                    <dt>Length: </dt> <dd id="song-length">-</dd>
+                    <dt>Filename: </dt> <dd id="song-filename">-</dd>
+                        <br />
+                    <dt>Next up:</dt> <dd id="nextsong-title">-</dd>
+                </dl>
+            </div>
+            
+            <ul class="span6 well nav nav-list">
+                <li class="nav-header">You are: <span id="identity">darkwater</span></li>
+                <li class="input-append" data-nolog>
+                    <input type="text" placeholder="Enter persona code" id="personacode" />
+                    <button class="btn" id="personaconfirm">Check</button>
+                </li>
+                <li data-log><a href="/do/rate/2"><i class="icon-heart"></i>        Love</a></li>
+                <li data-log><a href="/do/rate/1"><i class="icon-thumbs-up"></i>    Like</a></li>
+                <li data-log><a href="/do/rate/0"><i class="icon-minus"></i>        Neutral</a></li>
+                <li data-log><a href="/do/rate/-1"><i class="icon-thumbs-down"></i> Dislike</a></li>
+                <li data-log><a href="/do/rate/-2"><i class="icon-remove"></i>      Hate</a></li>
+            </ul>
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="js/main.js"></script>
+</body>
+</html>

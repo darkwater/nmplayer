@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mplayer</title>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <link type="text/css" rel="stylesheet" href="css/bootstrap.min.css" />
+    <link type="text/css" rel="stylesheet" href="css/bootstrap-responsive.min.css" />
+    <style>
+        body {
+            cursor: default;
+            padding: 20px;
+        }
+        #musicprogress {
+            margin: 5px 0;
+            width: 100%;
+            text-align: right;
+            color: black;
+            font-weight: bold;
+        }
+        #musicprogress .bar {
+            -webkit-transition: width 1s linear;
+            -moz-transition: width 1s linear;
+            -o-transition: width 1s linear;
+            transition: width 1s linear;
+            overflow: hidden;
+            text-align: left;
+            color: white;
+            font-weight: bold;
+            text-indent: 10px;
+            white-space: nowrap;
+            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+        }
+        #volume {
+            width: 28px;
+        }
+        .table-condensed tr td:first-child, .table-condensed tr th:first-child {
+            padding-left: 14px;
+        }
+        .table-condensed tr td:last-child, .table-condensed tr th:last-child {
+            padding-right: 14px;
+        }
+        .table-hover tbody tr {
+            cursor: pointer;
+        }
+        .table caption {
+            border-bottom: 1px solid #DDD;
+            padding-bottom: 5px;
+            font-size: 120%;
+        }
+        hr.line {
+            border: none;
+            border-bottom: 1px solid #DDD;
+            margin: 9px 0 6px;
+        }
+        .well-small .table-condensed {
+            margin-bottom: -9px;
+        }
+        #playlist.searching tr, #alltracks.searching tr {
+            display: none;
+        }
+        #playlist.searching tr.result, #alltracks.searching tr.result {
+            display: table-row;
+        }
+        .nav-tabs li.active a, .nav-tabs li.active:hover a {
+            background-color: whiteSmoke;
+        }
+        @media (min-width: 768px) {
+            #limitheight > .well {
+                height: 365px;
+                overflow-x: hidden;
+                overflow-y: auto;
+            }
+        }
+    </style>
+</head>
+
+<body onselectstart="return false">
+    <div class="container">
+        <div class="row-fluid">
+            <div class="span12 well" style="text-align: center;">
+                <div id="alert" class="alert alert-error">Loading...</div>
+                <h2>Now playing:</h2>
+                <h1 id="nowplaying">LOADING</h1>
+                <div class="row-fluid">
+                    <div class="span3">
+                        <div class="btn-group">
+                            <button class="btn" data-href="/do/prev">
+                                <i class="icon-step-backward"></i>
+                            </button>
+                            <button class="btn play" id="playpause">
+                                <i class="icon-play"></i>
+                            </button>
+                            <button class="btn" data-href="/do/next">
+                                <i class="icon-step-forward"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="span6">
+                        <div id="musicprogress" class="progress">
+                            <div class="bar" style="width: 0%;">1:23 / 4:56</div>
+                        </div>
+                    </div>
+                    <div class="span3">
+                        <div class="input-prepend input-append">
+                            <button class="btn" title="Volume down" data-href="/do/volumedown">
+                                <i class="icon-volume-down"></i>
+                            </button>
+                            <span id="volume" class="add-on">15</span>
+                            <button class="btn" title="Volume up" data-href="/do/volumeup">
+                                <i class="icon-volume-up"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <ul class="nav nav-tabs" style="margin-bottom: 0; border-bottom: none; position: relative; top: 2px;">
+            <li class="active"><a href="#info" data-toggle="tab">Track information</a></li>
+            <li><a href="#curplaylist" data-toggle="tab">Current playlist</a></li>
+            <li><a href="#alltracks" data-toggle="tab">All tracks</a></li>
+        </ul>
+        
+        <div class="tab-content" style="margin-top: 0;">
+            <div id="info" class="tab-pane active well">
+                <table class="table">
+                    <thead>
+                        <tr> <th></th> <th>Now playing</th> <th>Next up</th> </tr>
+                    </thead>
+                    <tbody>
+                        <tr> <th>Artist:   </th> <td id="song-artist">-  </td> <td id="nextsong-artist">-  </td> </tr>
+                        <tr> <th>Album:    </th> <td id="song-album">-   </td> <td id="nextsong-album">-   </td> </tr>
+                        <tr> <th>Title:    </th> <td id="song-title">-   </td> <td id="nextsong-title">-   </td> </tr>
+                        <tr> <th>Length:   </th> <td id="song-length">-  </td> <td id="nextsong-length">-  </td> </tr>
+                        <tr> <th>Genre:    </th> <td id="song-genre">-   </td> <td id="nextsong-genre">-   </td> </tr>
+                        <tr> <th>Filename: </th> <td id="song-filename">-</td> <td id="nextsong-filename">-</td> </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div id="curplaylist" class="tab-pane well well-small" style="padding: 9px 0;">
+                <div style="margin: 1px 9px -7px; position: relative;">
+                    <i class="icon-search" style="position: absolute; left: 9px; top: 7px;"></i>
+                    <input type="text" class="input input-block-level" placeholder="Search in playlist" id="playlistsearch" style="padding-left: 30px;" />
+                </div>
+                
+                <hr class="line" />
+                
+                <table class="table table-condensed table-hover">
+                    <caption style="padding-left: 9px;">
+                        Current playlist - <strong id="playlisttracks">0</strong>
+                        tracks with a total playtime of <strong id="playlisttime">0:00</strong>
+                    </caption>
+                    <thead>
+                        <tr> <th>#</th> <th>Artist</th> <th>Album</th> <th>Title</th> <th>Length</th> </tr>
+                    </thead>
+                    <tbody id="playlist"></tbody>
+                </table>
+            </div>
+            
+            <div id="alltracks" class="tab-pane well well-small" style="padding: 9px 0;">
+                <div style="margin: 1px 9px -7px; position: relative;">
+                    <i class="icon-search" style="position: absolute; left: 9px; top: 7px;"></i>
+                    <input type="text" class="input input-block-level" placeholder="Search all tracks" id="trackssearch" style="padding-left: 30px;" />
+                </div>
+                
+                <hr class="line" />
+                
+                <table class="table table-condensed table-hover">
+                    <caption style="padding-left: 9px;">
+                        All tracks - <strong id="totaltracks">0</strong>
+                        tracks with a total playtime of <strong id="totaltime">0:00</strong>
+                    </caption>
+                    <thead>
+                        <tr> <th>Artist</th> <th>Album</th> <th>Title</th> <th>Length</th> </tr>
+                    </thead>
+                    <tbody id="alltrackslist"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="js/main.js"></script>
+</body>
+</html>
