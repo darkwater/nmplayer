@@ -75,6 +75,8 @@ def scaleclamp(n, x1, y1, x2, y2):
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
+        print("GET request from %s:%s to %s" % (self.client_address[0], self.client_address[1], self.path))
+
         filepath = os.getcwd() + "/www" + self.path
 
         if self.path[:4] == "/do/":
@@ -104,7 +106,7 @@ class Handler(BaseHTTPRequestHandler):
                 r = client.status()
                 r['songdata'] = client.currentsong()
                 r['nextsongdata'] = client.playlistid(r['nextsongid'])[0]
-                r['volume'] = scaleclamp(r['volume'], 60, 100, 0, 20)
+                r['volume'] = scaleclamp(r['volume'], 40, 100, 0, 20)
                 self.wfile.write(json.dumps(r))
             elif action[1] == 'prev':
                 client.previous()
@@ -113,22 +115,22 @@ class Handler(BaseHTTPRequestHandler):
             elif action[1] == 'next':
                 client.next()
             elif action[1] == 'setvolume':
-                action[2] = scaleclamp(r['volume'], 0, 20, 60, 100)
-                if action[2] == 60:
+                action[2] = scaleclamp(r['volume'], 0, 20, 40, 100)
+                if action[2] == 40:
                     action[2] = 0
                 client.setvol(action[2])
             elif action[1] == 'volumeup':
                 r = client.status()
-                vol = scaleclamp(r['volume'], 60, 100, 0, 20)
+                vol = scaleclamp(r['volume'], 40, 100, 0, 20)
                 vol += 1
-                vol = scaleclamp(vol, 0, 20, 60, 100)
+                vol = scaleclamp(vol, 0, 20, 40, 100)
                 client.setvol(vol)
             elif action[1] == 'volumedown':
                 r = client.status()
-                vol = scaleclamp(r['volume'], 60, 100, 0, 20)
+                vol = scaleclamp(r['volume'], 40, 100, 0, 20)
                 vol -= 1
-                vol = scaleclamp(vol, 0, 20, 60, 100)
-                if vol == 60:
+                vol = scaleclamp(vol, 0, 20, 40, 100)
+                if vol == 40:
                     vol = 0
                 client.setvol(vol)
             elif action[1] == 'getplaylist':
@@ -145,12 +147,18 @@ class Handler(BaseHTTPRequestHandler):
 
         if os.path.isdir(filepath):
             filepath += "/index.html"
-
+            
         if not os.path.exists(filepath):
             self.send_response(404)
-            self.send_header("Content-type", "text/html")
+            self.send_header("Content-type", "text/plain")
             self.end_headers()
             self.wfile.write("404 File Not Found: %s" % filepath)
+        elif not os.path.abspath(filepath).startswith(os.getcwd() + "/www/"):
+            self.send_response(403)
+            self.send_header("Content-type", "text/plain")
+            self.end_headers()
+            self.wfile.write("403 Forbidden: %s\nThis incident has been logged." % filepath)
+            print("403 -- %s:%s tried to access %s, but the request was blocked since the target file was not located in the www folder." % (self.client_address[0], self.client_address[1], filepath))
         else:
             fh = open(filepath, "r")
             self.send_response(200)
@@ -173,6 +181,9 @@ cursong = "-"
 cursongrefreshtimer = 1
 
 
+keepalivetimer = 500
+
+
 
 running = True
 while running:
@@ -181,6 +192,11 @@ while running:
     except KeyboardInterrupt:
         print(" quitting...")
         running = False
+
+    keepalivetimer -= 1
+    if keepalivetimer < 0:
+        keepalivetimer = 500
+        client.status()
     
     if video:
         try:
